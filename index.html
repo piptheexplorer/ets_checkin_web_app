@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#111827">
+  <title>Event Ticket Seller Check-in</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="assets/app.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <div>
+        <span class="eyebrow">Event Ticket Seller</span>
+        <h1>Check-in App</h1>
+        <p class="site-label" data-site-label>Not connected</p>
+      </div>
+      <div class="header-actions">
+        <button class="ghost" data-fullscreen>Door Mode</button>
+        <button class="ghost" data-open-settings>Connection</button>
+      </div>
+    </header>
+
+    <section class="connection-panel" data-connection-panel>
+      <div class="panel-head">
+        <div>
+          <span class="eyebrow">Connection</span>
+          <h2>Connect to WordPress</h2>
+        </div>
+        <span class="pill" data-connection-state>Disconnected</span>
+      </div>
+      <div class="connection-grid">
+        <label>WordPress site or API base URL
+          <input type="url" data-api-base placeholder="https://example.com">
+        </label>
+        <label>App token
+          <input type="password" data-api-token placeholder="etsck_…">
+        </label>
+        <label>Device name
+          <input type="text" data-device-name placeholder="Main Gate iPad 1">
+        </label>
+        <label>Default entrance / gate
+          <input type="text" data-default-entrance placeholder="Main Entrance">
+        </label>
+      </div>
+      <div class="button-row">
+        <button class="primary" data-save-connection>Save and test connection</button>
+        <button class="danger ghost" data-clear-connection>Clear saved connection</button>
+      </div>
+      <p class="hint">Create the token inside WordPress under Ticket Seller → Check-in App API. Add this app’s domain to the allowed origins list.</p>
+    </section>
+
+    <main class="dashboard" data-dashboard hidden>
+      <section class="toolbar card">
+        <label>Event
+          <select data-event-select></select>
+        </label>
+        <label>Event date
+          <select data-date-select></select>
+        </label>
+        <label>Entrance / gate
+          <input type="text" data-entrance placeholder="Main Entrance">
+        </label>
+        <div class="toolbar-status">
+          <button data-refresh>Refresh</button>
+          <span data-last-refresh>Waiting…</span>
+        </div>
+      </section>
+
+      <section class="stats-grid">
+        <article><span>Issued</span><strong data-stat="issued">0</strong><small>Admission tickets</small></article>
+        <article class="success"><span>Checked in</span><strong data-stat="checked_in">0</strong><small data-stat-label="attendance_percent">0%</small></article>
+        <article><span>Not arrived</span><strong data-stat="awaiting">0</strong><small>Active tickets</small></article>
+        <article class="danger-stat"><span>Invalid</span><strong data-stat="invalid">0</strong><small>Cancelled/refunded</small></article>
+        <article><span>Capacity left</span><strong data-stat="capacity_remaining">—</strong><small data-stat-label="capacity">Select a date</small></article>
+      </section>
+
+      <div class="progress-wrap">
+        <div class="progress"><i data-progress-bar></i></div>
+        <strong data-progress-label>0% checked in</strong>
+      </div>
+
+      <section class="scan-grid">
+        <article class="card scanner-card">
+          <div class="panel-head">
+            <div>
+              <span class="eyebrow">Scanner</span>
+              <h2>Scan ticket QR</h2>
+            </div>
+            <label class="inline-check"><input type="checkbox" data-auto-checkin> Auto check-in</label>
+          </div>
+          <div id="qr-reader" class="qr-reader"></div>
+          <div class="button-row">
+            <button class="primary" data-start-scanner>Start scanner</button>
+            <button data-stop-scanner disabled>Stop</button>
+          </div>
+        </article>
+
+        <article class="card manual-card">
+          <div class="panel-head">
+            <div>
+              <span class="eyebrow">Manual lookup</span>
+              <h2>Validate a ticket</h2>
+            </div>
+          </div>
+          <label>Ticket ID, QR text or ticket URL
+            <textarea data-ticket-input rows="3" placeholder="Scan or paste the ticket code"></textarea>
+          </label>
+          <div class="button-row">
+            <button class="primary" data-validate>Validate</button>
+            <button data-checkin-current disabled>Check in</button>
+            <button class="danger ghost" data-undo-current disabled>Undo</button>
+          </div>
+          <div class="scan-result empty" data-scan-result>No ticket scanned yet.</div>
+        </article>
+      </section>
+
+      <section class="activity-and-roster">
+        <article class="card activity-card">
+          <div class="panel-head"><div><span class="eyebrow">Live feed</span><h2>Recent activity</h2></div><span class="live-dot">Live</span></div>
+          <div class="activity-list" data-activity-list><p class="empty">No activity yet.</p></div>
+        </article>
+
+        <article class="card roster-card">
+          <div class="panel-head">
+            <div><span class="eyebrow">Door list</span><h2>Ticket holders</h2></div>
+            <span data-roster-count>0 results</span>
+          </div>
+          <div class="roster-filters">
+            <input type="search" data-search placeholder="Search attendee, email or ticket ID">
+            <select data-status-filter>
+              <option value="">All statuses</option>
+              <option value="not_checked_in">Not checked in</option>
+              <option value="checked_in">Checked in</option>
+              <option value="invalid">Invalid</option>
+              <option value="passes">Add-on passes</option>
+            </select>
+            <select data-type-filter><option value="">All ticket types</option></select>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Attendee</th><th>Ticket</th><th>Date</th><th>Status</th><th>Action</th></tr></thead>
+              <tbody data-roster-body><tr><td colspan="5" class="empty">Loading…</td></tr></tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <template id="ticket-card-template">
+    <div class="ticket-card-result">
+      <div class="result-status"></div>
+      <h3></h3>
+      <p class="muted result-email"></p>
+      <dl>
+        <div><dt>Ticket</dt><dd class="result-ticket"></dd></div>
+        <div><dt>Event</dt><dd class="result-event"></dd></div>
+        <div><dt>Valid date</dt><dd class="result-date"></dd></div>
+        <div><dt>Checked in</dt><dd class="result-checkin"></dd></div>
+      </dl>
+    </div>
+  </template>
+
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <script src="assets/app.js" defer></script>
+</body>
+</html>

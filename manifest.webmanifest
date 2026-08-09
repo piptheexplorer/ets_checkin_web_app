@@ -1,0 +1,13 @@
+{
+  "name": "Event Ticket Seller Check-in",
+  "short_name": "Check-in",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0b1020",
+  "theme_color": "#111827",
+  "description": "Standalone check-in app for Event Ticket Seller tickets.",
+  "icons": [
+    { "src": "assets/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
